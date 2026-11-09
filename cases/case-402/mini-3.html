@@ -6,7 +6,7 @@
   <title>Секрет в смартфоне жертвы</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #08070c; color: #f8fafc; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #08070c; color: #f8fafc; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; }
     .box { max-width: 480px; width: 100%; background: radial-gradient(circle at 50% 0%, #2b1810, #110d16); border: 1px solid #f59e0b55; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
     .badge { font-size: 11px; color: #fbbf24; font-weight: 800; letter-spacing: 0.06em; }
     .ctx { font-size: 13.5px; color: #fde68a; line-height: 1.45; background: rgba(0,0,0,0.45); padding: 12px; border-radius: 10px; }
@@ -14,10 +14,13 @@
     .opt { background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.16); padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; }
     .opt.ok { border-color: #10b981; background: rgba(16,185,129,0.28); }
     .opt.bad { border-color: #ef4444; background: rgba(239,68,68,0.25); }
-    .cta { display: none; text-align: center; background: linear-gradient(90deg, #f59e0b, #ea580c); color: #090b10; font-weight: 900; padding: 13px; border-radius: 10px; text-decoration: none; margin-top: 8px; }
+    .cta { display: none; text-align: center; background: linear-gradient(90deg, #f59e0b, #ea580c); color: #090b10; font-weight: 900; padding: 13px; border-radius: 10px; text-decoration: none; margin-top: 6px; }
+    .cta-yt { display: none; text-align: center; background: #261b26; border: 1px solid #ef444488; color: #fca5a5; font-weight: 800; padding: 11px; border-radius: 10px; text-decoration: none; font-size: 13px; }
+    .back-link { margin-bottom: 12px; color: #94a3b8; font-size: 13px; text-decoration: none; font-weight: 700; }
   </style>
 </head>
 <body>
+  <a class="back-link" href="https://liprema.github.io/-detective-studio/">← Вернуться в Каталог всех игр</a>
   <div class="box">
     <div class="badge">МИНИ-ИГРА #3 • ЗАБЛОКИРОВАННЫЙ ТЕЛЕФОН</div>
     <div style="font-size:20px;font-weight:900;">Секрет в смартфоне жертвы</div>
@@ -25,10 +28,11 @@
     <div class="q">❓ Как куратор смогла отравить жертву в 22:45, имея железное видео-алиби с 22:10?</div>
     <div id="opts"></div>
     <div id="exp" style="display:none;font-size:13px;color:#a7f3d0;background:rgba(6,78,59,0.7);padding:12px;border-radius:10px;line-height:1.45;"></div>
-    <a class="cta" id="ctaBtn" href="https://liprema.github.io/-detective-studio/cases/case-402/index.html" target="_blank">📂 Перейти в полную 15-минутную Папку с делом →</a>
+    <a class="cta" id="ctaBtn" href="https://liprema.github.io/-detective-studio/cases/case-402/index.html">📂 Раскрыть полное 15-минутное дело →</a>
+    <a class="cta-yt" id="ctaYtBtn" href="https://www.youtube.com/" target="_blank">🎬 Найти секретный код сейфа в YouTube-выпуске (05:40 (Глава 4–5 видеовыпуска на YouTube)) →</a>
   </div>
   <script>
-    const Q = {"category":"MINI-CASE #3 • DIGITAL FORENSICS","context":"В телефоне жертвы найдено сообщение от эксперта Сотбис: манускрипт за $2 млн в сейфе — подделка! А куратор Елена Корт (Личный биохимик и куратор архива, 36 лет) принесла виски со льдом в 22:00 и ушла на видеозвонок.","question":"Как куратор смогла отравить жертву в 22:45, имея железное видео-алиби с 22:10?","options":["Ей помог дворецкий","Запись видеозвонка была смонтирована","Она бросила отравленный кубик льда в 22:00, который растаял только к 22:40"],"correctIndex":2,"explanation":"Блестяще! Проверьте все 4 вкладки секретного дела в полной 15-минутной браузерной игре!"};
+    const Q = {"category":"MINI-CASE #3 • DIGITAL FORENSICS","context":"В телефоне жертвы найдено сообщение от эксперта Сотбис: манускрипт за $2 млн в сейфе — подделка! А куратор Елена Корт (Личный биохимик и куратор архива, 36 лет) принесла виски со льдом в 22:00 и ушла на видеозвонок.","question":"Как куратор смогла отравить жертву в 22:45, имея железное видео-алиби с 22:10?","options":["Ей помог дворецкий","Запись видеозвонка была смонтирована","Она бросила отравленный кубик льда в 22:00, который растаял только к 22:40"],"correctIndex":2,"explanation":"Блестяще! А чтобы вскрыть секретный сейф в полной игре, найдите код-пасхалку в нашем YouTube-выпуске!"};
     let done = false;
     const box = document.getElementById('opts');
     Q.options.forEach((o, i) => {
@@ -45,6 +49,7 @@
         e.textContent = '🔍 ' + Q.explanation;
         e.style.display = 'block';
         document.getElementById('ctaBtn').style.display = 'block';
+        document.getElementById('ctaYtBtn').style.display = 'block';
       };
       box.appendChild(d);
     });
