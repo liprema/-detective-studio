@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Последний бокал Артура Вэнса — Detective Case File Game</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0c0a0e; color: #f1f5f9; min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: #16121c; border-bottom: 1px solid #352a22; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .tabs { display: flex; gap: 8px; padding: 12px 24px 0; background: #120f17; border-bottom: 1px solid #2b231d; flex-wrap: wrap; }
+    .tab { padding: 10px 16px; border-radius: 8px 8px 0 0; background: #1c1724; color: #a8a29e; font-weight: 700; font-size: 13px; border: 1px solid #2b231d; border-bottom: none; cursor: pointer; }
+    .tab.active { background: #261f30; color: #fbbf24; }
+    .layout { display: flex; flex: 1; max-width: 1200px; width: 100%; margin: 0 auto; gap: 20px; padding: 20px; }
+    .main { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+    .side { width: 320px; background: #14111a; border: 1px solid #2d2538; border-radius: 12px; padding: 16px; height: fit-content; }
+    .card { background: #1c1824; border: 1px solid #332a40; border-radius: 12px; padding: 18px; }
+    .title { color: #fbbf24; font-size: 13px; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .hs { background: #262030; border: 1px solid #453a54; border-radius: 10px; padding: 12px; color: #fff; text-align: left; cursor: pointer; }
+    .hs.done { border-color: #10b981; background: rgba(16,185,129,0.12); }
+    .clue { background: #221d2b; border: 1px solid #f59e0b55; border-radius: 8px; padding: 10px; font-size: 12.5px; margin-top: 8px; }
+    select, input { background: #14111a; border: 1px solid #3d334d; color: #fff; padding: 9px; border-radius: 6px; width: 100%; }
+    button.act { background: linear-gradient(135deg, #d97706, #f59e0b); color: #090b10; font-weight: 800; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
+    @media (max-width: 800px) { .layout { flex-direction: column; } .side { width: 100%; } .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <div style="font-size:11px; color:#fbbf24; font-weight:800;">CASE #402-VANCE</div>
+      <div style="font-size:20px; font-weight:900;">Последний бокал Артура Вэнса</div>
+    </div>
+    <div id="prog" style="font-size:13px; color:#fbbf24; font-weight:700;"></div>
+  </header>
+  <div class="tabs">
+    <button class="tab active" id="t-scene" onclick="go('scene')">🔍 1. Место преступления</button>
+    <button class="tab" id="t-suspects" onclick="go('suspects')">👥 2. Допросы подозреваемых</button>
+    <button class="tab" id="t-phone" onclick="go('phone')">📱 3. Смартфон жертвы</button>
+    <button class="tab" id="t-warrant" onclick="go('warrant')">⚖️ 4. Ордер на арест</button>
+  </div>
+  <div class="layout">
+    <div class="main" id="main"></div>
+    <div class="side">
+      <div class="title">🗂 Собранные улики</div>
+      <div id="inv"></div>
+    </div>
+  </div>
+  <script>
+    const CASE = {"caseId":"CASE #402-VANCE","title":"Последний бокал Артура Вэнса","victim":"Артур Вэнс (64 года, миллиардер и коллекционер редких рукописей)","timeOfDeath":"Между 22:30 и 23:00 (пятница, 14 ноября)","policeSummary":"В 23:15 тело Артура Вэнса было обнаружено в его запертом изнутри кабинете в горном шале. Из-за снежной бури дороги перекрыты, в доме находились только трое. На столе — бокал виски со следами цианида и недописанное завещание.","coronerReport":"Смерть наступила от быстродействующего яда, растворённого во льду бокала: яд подействовал только тогда, когда лёд растаял (через 25–30 минут после того, как напиток налили). Артур Вэнс был убеждённым левшой.","crimeSceneHotspots":[{"id":"hs_glass","name":"🥃 Бокал с виски и форма для льда","description":"В бокале остатки виски и растаявший лёд. Экспертиза показала: сам виски в графине чист, отравлен был именно кубик льда в мини-морозилке кабинета!","clueId":"clue_ice","clueTitle":"Отравленный лёд замедленного действия","clueText":"Яд был заморожен внутри кубика льда заранее. Убийце не нужно было находиться в кабинете в 22:45 — достаточно было положить лёд в бокал до 22:15."},{"id":"hs_window","name":"❄️ Балконная дверь и свежий снег","description":"Снегопад начался ровно в 22:20. На балконе и в саду под окнами кабинета — абсолютно девственный снег без единого следа обуви.","clueId":"clue_snow","clueTitle":"Нет следов на снегу после 22:20","clueText":"Никто не входил и не выходил через балкон или зимний сад после 22:20."},{"id":"hs_will","name":"✒️ Черновик нового завещания на столе","description":"На листе бумаги каллиграфическим почерком с наклоном вправо написано: «Оставляю всю коллекцию племяннику Виктору». Но ручка лежит справа от листа, а на правом рукаве жертвы нет чернил.","clueId":"clue_handwriting","clueTitle":"Поддельный черновик правши","clueText":"Артур Вэнс был левшой, а черновик завещания в пользу Виктора написан твёрдой рукой правши."},{"id":"hs_painting","name":"🖼 Сейф за картиной и дата шифра","description":"Сейф открыт. На обороте рамки карандашом записана подсказка к ПИН-коду телефона Артура: «Год, когда я купил свой первый аукционный лот — 1989».","clueId":"clue_pin_hint","clueTitle":"Код от смартфона жертвы: 1989","clueText":"Четырёхзначный ПИН-код от заблокированного телефона Артура Вэнса — 1989."}],"suspects":[{"id":"susp_victor","name":"Виктор Вэнс (Племянник, 29 лет)","role":"Наследник, погрязший в карточных долгах","motive":"Должен кредиторам $400,000 до понедельника. Дядя грозился лишить его наследства.","alibi":"Утверждает, что в 22:35 вышел покурить в зимний сад через балконную дверь первого этажа и гулял по дорожке сада до 23:00.","questions":[{"q":"Почему черновик завещания на столе написан в вашу пользу?","a":"Дядя сам позвал меня в 21:30 и сказал, что передумал и хочет всё оставить мне!"},{"q":"Кто-нибудь видел вас в саду между 22:35 и 23:00?","a":"Нет, все сидели по комнатам, но я точно ходил по садовой дорожке под снегом!"}],"contradictionClueId":"clue_snow","brokenConfession":"Ладно, я соврал про сад! В 22:40 я тайком пробрался в кабинет дяди через коридор — но он УЖЕ лежал без пульса! Я испугался, что останусь без гроша, и быстро написал своей правой рукой фальшивую строчку в завещании, но я его не травил!"},{"id":"susp_elena","name":"Елена Корт (Личный биохимик и куратор архива, 36 лет)","role":"Реставратор древних манускриптов (работает с реактивами и цианидами для очистки металлов)","motive":"Артур узнал, что Елена тайно заменила оригинальный манускрипт XV века за $2 млн на копию и продала подлинник на чёрном рынке.","alibi":"В 22:00 принесла Артуру в кабинет бокал виски со льдом, после чего в 22:05 ушла к себе в гостевое крыло и до 23:15 вела видеозвонок с коллегой из Лондона (подтверждено логами звонка!).","questions":[{"q":"Вы подавали Артуру тот самый бокал виски?","a":"Да, ровно в 22:00 я налила виски из общего графина и бросила туда два кубика льда из его морозилки. В 22:05 он был абсолютно здоров и разговаривал со мной! А с 22:10 до 23:15 у меня железное видео-алиби."},{"q":"Откуда в доме цианистый калий?","a":"Он хранится в моей реставрационной мастерской, но ключ от шкафа был и у меня, и у самого Артура."}],"contradictionClueId":"clue_ice","brokenConfession":"Вы... вы проверили лёд?! Я рассчитывала, что видеозвонок с Лондоном даст мне 100% алиби на момент смерти в 22:45... Если бы Артур утром подал заявление о краже манускрипта, я бы села на 15 лет!"},{"id":"susp_marcus","name":"Маркус (Дворецкий, 58 лет)","role":"Управляющий шале на протяжении 20 лет","motive":"Узнал, что Артур собирается продать шале и уволить весь персонал без пенсии.","alibi":"С 21:45 до 23:10 проверял дизельный генератор в подвале из-за обрыва линии электропередач.","questions":[{"q":"Кто заходил в кабинет после 22:00?","a":"В 22:05 оттуда вышла мисс Елена, а около 22:40 я слышал быстрые шаги Виктора по лестнице."}],"contradictionClueId":"clue_handwriting","brokenConfession":"Клянусь, я сразу понял, что листок на столе написал правыми буквами молодой Виктор — у хозяина Артура был совсем другой наклон влево!"}],"phonePuzzle":{"correctPin":"1989","hint":"Найдите 4-значный год на обратной стороне картины у сейфа на месте преступления.","messages":[{"time":"20:15 • От: Эксперт Сотбис (Лондон)","text":"Артур, мы проверили фото вашего манускрипта XV века. Увы, в вашем сейфе лежит свежая подделка. Оригинал месяц назад всплыл в Цюрихе через счета вашего куратора Елены Корт."},{"time":"20:30 • Черновик письма Артура в полицию","text":"Завтра в 9:00 утра передаю доказательства махинаций Елены Корт прокурору. Сегодня вечером дам ей последний шанс сознаться."},{"time":"21:55 • Умный дом (Лог датчиков кабинета)","text":"21:58 — открыта дверца мини-морозилки. 22:05 — Елена Корт покинула кабинет. 22:38 — Артур Вэнс уронил бокал. 22:41 — Виктор Вэнс вошёл в кабинет на 3 минуты."}]},"warrantSolution":{"killerId":"susp_elena","motive":"Скрыть кражу и подмену манускрипта XV века за $2 млн перед утренним обращением Артура в полицию","method":"Цианид, заранее замороженный в кубиках льда (сработал через 30 минут, обеспечив ложное видео-алиби)","evidenceId":"clue_ice"}};
+    let clues = [{ id: 'autopsy', title: 'Отчёт коронера', text: CASE.coronerReport }];
+    let hsDone = {}, broken = {}, unlocked = false, tab = 'scene';
+    function addClue(id, title, text) {
+      if (!clues.some(c => c.id === id)) clues.push({ id, title, text });
+      renderInv();
+    }
+    function renderInv() {
+      document.getElementById('prog').textContent = 'Улик в базе: ' + clues.length;
+      document.getElementById('inv').innerHTML = clues.map(c => '<div class="clue"><strong style="color:#fbbf24;display:block;">📌 ' + c.title + '</strong>' + c.text + '</div>').join('');
+    }
+    function go(t) {
+      tab = t;
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      document.getElementById('t-' + t).classList.add('active');
+      render();
+    }
+    function render() {
+      renderInv();
+      const m = document.getElementById('main');
+      if (tab === 'scene') {
+        m.innerHTML = '<div class="card"><div class="title">📋 Отчёт полиции и коронера</div><p style="margin-bottom:8px;"><strong>Жертва:</strong> ' + CASE.victim + '<br><strong>Время:</strong> ' + CASE.timeOfDeath + '</p><p style="margin-bottom:10px;line-height:1.5;">' + CASE.policeSummary + '</p><div style="background:#2a1f1d;border-left:3px solid #f59e0b;padding:10px;border-radius:6px;color:#fde68a;">🔬 ' + CASE.coronerReport + '</div></div><div class="card"><div class="title">🔎 Осмотр кабинета (Кликайте на объекты)</div><div class="grid" id="g"></div><div id="det" style="margin-top:12px;"></div></div>';
+        CASE.crimeSceneHotspots.forEach(h => {
+          const b = document.createElement('button');
+          b.className = 'hs' + (hsDone[h.id] ? ' done' : '');
+          b.innerHTML = '<strong>' + h.name + '</strong><br><span style="font-size:12px;color:#94a3b8;">' + (hsDone[h.id] ? '✅ Изучено' : 'Осмотреть →') + '</span>';
+          b.onclick = () => {
+            hsDone[h.id] = true;
+            addClue(h.clueId, h.clueTitle, h.clueText);
+            render();
+            document.getElementById('det').innerHTML = '<div class="clue" style="border-color:#10b981;"><strong>' + h.name + ':</strong> ' + h.description + '</div>';
+          };
+          document.getElementById('g').appendChild(b);
+        });
+      }
+      if (tab === 'suspects') {
+        m.innerHTML = '';
+        CASE.suspects.forEach(s => {
+          const d = document.createElement('div');
+          d.className = 'card';
+          d.innerHTML = '<div class="title">👤 ' + s.name + ' (' + s.role + ')</div><p style="font-size:13px;margin-bottom:8px;"><strong>Мотив:</strong> ' + s.motive + '<br><strong>Алиби:</strong> «' + s.alibi + '»</p>' + s.questions.map(q => '<div class="clue" style="border-color:#443852;"><strong>— ' + q.q + '</strong><br>— «' + q.a + '»</div>').join('') + '<div style="display:flex;gap:8px;margin-top:12px;"><select id="sel_' + s.id + '"><option value="">Предъявить улику из базы...</option>' + clues.map(c => '<option value="' + c.id + '">' + c.title + '</option>').join('') + '</select><button class="act" onclick="confront(\'' + s.id + '\')">⚡ Ловить на лжи</button></div>' + (broken[s.id] ? '<div class="clue" style="border-color:#10b981;background:rgba(16,185,129,0.15);"><strong>💥 Признание:</strong> «' + s.brokenConfession + '»</div>' : '');
+          m.appendChild(d);
+        });
+      }
+      if (tab === 'phone') {
+        if (!unlocked) {
+          m.innerHTML = '<div class="card" style="text-align:center;"><div class="title">📱 Введите 4-значный ПИН-код телефона</div><p style="margin-bottom:12px;font-size:13px;">' + CASE.phonePuzzle.hint + '</p><input id="pin" placeholder="1989" style="max-width:160px;text-align:center;font-size:18px;margin-bottom:10px;" /><br><button class="act" onclick="unlock()">🔓 Разблокировать</button></div>';
+        } else {
+          m.innerHTML = '<div class="card"><div class="title">🔓 Архив сообщений и Умный дом</div>' + CASE.phonePuzzle.messages.map(msg => '<div class="clue"><strong>' + msg.time + '</strong><br>' + msg.text + '</div>').join('') + '</div>';
+        }
+      }
+      if (tab === 'warrant') {
+        m.innerHTML = '<div class="card"><div class="title">⚖️ Финальное обвинение</div><p style="margin-bottom:10px;font-size:13px;">Выберите преступника и главную улику:</p><select id="wk" style="margin-bottom:10px;">' + CASE.suspects.map(s => '<option value="' + s.id + '">' + s.name + '</option>').join('') + '</select><select id="wc" style="margin-bottom:12px;">' + clues.map(c => '<option value="' + c.id + '">' + c.title + '</option>').join('') + '</select><button class="act" onclick="accuse()">⚖️ Подписать ордер на арест</button><div id="wres" style="margin-top:12px;"></div></div>';
+      }
+    }
+    function confront(id) {
+      const s = CASE.suspects.find(x => x.id === id);
+      const val = document.getElementById('sel_' + id).value;
+      if (val === s.contradictionClueId) {
+        broken[id] = true;
+        addClue('conf_' + id, 'Признание: ' + s.name, s.brokenConfession);
+        render();
+      } else alert('Эта улика не опровергает его алиби!');
+    }
+    function unlock() {
+      if (document.getElementById('pin').value.trim() === CASE.phonePuzzle.correctPin.trim()) {
+        unlocked = true;
+        addClue('phone_logs', 'Логи смартфона жертвы', 'Подтверждены махинации и время открытия морозилки.');
+        render();
+      } else alert('Неверный ПИН-код!');
+    }
+    function accuse() {
+      const k = document.getElementById('wk').value;
+      const c = document.getElementById('wc').value;
+      const r = document.getElementById('wres');
+      if (k === CASE.warrantSolution.killerId && c === CASE.warrantSolution.evidenceId) {
+        r.innerHTML = '<div class="clue" style="border-color:#10b981;background:rgba(16,185,129,0.2);">🏆 <strong>ДЕЛО РАСКРЫТО!</strong> ' + CASE.warrantSolution.motive + ' (' + CASE.warrantSolution.method + ')</div>';
+      } else {
+        r.innerHTML = '<div class="clue" style="border-color:#ef4444;background:rgba(239,68,68,0.2);">❌ Ошибка в ордере! Проверьте улики внимательнее.</div>';
+      }
+    }
+    render();
+  </script>
+</body>
+</html>
